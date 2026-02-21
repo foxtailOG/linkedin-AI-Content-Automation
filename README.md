@@ -1,6 +1,7 @@
 # LinkedIn AI Content Automation System
 
-![Workflow Architecture](workflow.png)
+![Uploading image (2).png…]()
+
 
 An AI-powered automation workflow built using n8n that generates unique LinkedIn developer polls daily with duplicate detection and automated delivery.
 
