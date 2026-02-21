@@ -1,0 +1,328 @@
+{
+  "name": "Daily LinkedIn Poll Generator for Java Developers",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": "={{ 18 }}",
+              "triggerAtMinute": "={{ 0 }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        0,
+        0
+      ],
+      "id": "84187b7c-56cb-4c37-9cb0-2ccf25c224ec",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Generate a unique LinkedIn poll question for Java and Backend Developers.  Do NOT generate any previously common LinkedIn poll questions.\nBe highly creative and niche.\n\nRules:\n- Must not repeat common beginner questions\n- Make it modern (2026 context)\n- Provide 4 short options\n- Provide 5 hashtags\n- Output strictly in this format:\n\nQuestion:\nOption 1:\nOption 2:\nOption 3:\nOption 4:\n\nHashtags:",
+        "hasOutputParser": true,
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        384,
+        0
+      ],
+      "id": "77019716-49bb-4935-9539-523844cda9bc",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        384,
+        240
+      ],
+      "id": "62615a88-00fc-4bc7-b297-da286d5a891d",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "PmwW7av1WIYVcRBc",
+          "name": "n8n free OpenAI API credits"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "efb05882-11fd-4688-b4f6-95ca7629c1f0",
+              "leftValue": "={{$json[\"Question\"]}}",
+              "rightValue": "=",
+              "operator": {
+                "type": "string",
+                "operation": "empty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        944,
+        0
+      ],
+      "id": "f0d8a396-bc51-46f2-89d5-7a66305d1125",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1q2P1bTV9R2KrvPI2B5g8bWk4bxdURiIBdWTf3T_m64A",
+          "mode": "list",
+          "cachedResultName": "Linkedin_Polls_2026",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1q2P1bTV9R2KrvPI2B5g8bWk4bxdURiIBdWTf3T_m64A/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1q2P1bTV9R2KrvPI2B5g8bWk4bxdURiIBdWTf3T_m64A/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Question",
+              "lookupValue": "={{$node[\"Basic LLM Chain\"].json[\"text\"].split(\"\\n\")[0].replace(\"Question:\",\"\").trim()}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        736,
+        0
+      ],
+      "id": "be0fc855-7322-4b97-8b06-260d2a0413fe",
+      "name": "Get row(s) in sheet",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "keyDwiGZLhx38Anm",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1q2P1bTV9R2KrvPI2B5g8bWk4bxdURiIBdWTf3T_m64A",
+          "mode": "list",
+          "cachedResultName": "Linkedin_Polls_2026",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1q2P1bTV9R2KrvPI2B5g8bWk4bxdURiIBdWTf3T_m64A/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1q2P1bTV9R2KrvPI2B5g8bWk4bxdURiIBdWTf3T_m64A/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Question": "={{$node[\"Basic LLM Chain\"].json[\"text\"].split(\"\\n\")[0].replace(\"Question:\",\"\").trim()}}",
+            "Full_Poll": "={{$node[\"Basic LLM Chain\"].json[\"text\"]}}",
+            "Date": "={{$now}}"
+          },
+          "matchingColumns": [
+            "Question"
+          ],
+          "schema": [
+            {
+              "id": "Question",
+              "displayName": "Question",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Full_Poll",
+              "displayName": "Full_Poll",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        1152,
+        -96
+      ],
+      "id": "71ef4370-c616-40c3-b46a-c0b7a47ca9fc",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "keyDwiGZLhx38Anm",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "vishalchaudhary10225a@gmail.com",
+        "subject": "poll question",
+        "emailType": "text",
+        "message": "={{\"🔥 Daily LinkedIn Poll\\n\\n\" + $node[\"Basic LLM Chain\"].json[\"text\"] + \"\\n\\nComment your reasoning 👇\"}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1360,
+        -96
+      ],
+      "id": "a263cb5d-d6ba-486a-a248-3a46d33d66b5",
+      "name": "Send a message",
+      "webhookId": "d1849b14-a4e1-44e3-a6c6-a9898e9fd412",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "p8MkNGKW7EWrpWg4",
+          "name": "Gmail account 3"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "10a2221f-9357-449c-8cec-ef7d2c5dda8f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "e62bd7184dd1a5ea2a1070ebc3fe2092c5257509542055395bcf1d3e64c125db"
+  },
+  "id": "PFCnxZXSSka3g2n7",
+  "tags": []
+}
